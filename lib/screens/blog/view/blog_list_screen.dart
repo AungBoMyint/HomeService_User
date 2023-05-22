@@ -52,15 +52,22 @@ class _BlogListScreenState extends State<BlogListScreen> {
         setState(() {});
         return await 2.seconds.delay;
       },
-      child: AppScaffold(
-        appBarTitle: language.blogs,
-        child: Stack(
+      child: Scaffold(
+        appBar: appBarWidget(
+          language.blogs,
+          textColor: white,
+          showBack: false,
+          elevation: 3.0,
+          color: context.primaryColor,
+        ),
+        body: Stack(
           children: [
             SnapHelperWidget<List<BlogData>>(
               future: future,
               loadingWidget: LoaderWidget(),
               onSuccess: (snap) {
-                if (snap.isEmpty) return BackgroundComponent(text: language.noBlogsFound);
+                if (snap.isEmpty)
+                  return BackgroundComponent(text: language.noBlogsFound);
 
                 return AnimatedListView(
                   physics: AlwaysScrollableScrollPhysics(),
@@ -85,7 +92,9 @@ class _BlogListScreenState extends State<BlogListScreen> {
                 return Text(e.toString(), style: primaryTextStyle()).center();
               },
             ),
-            Observer(builder: (context) => LoaderWidget().visible(appStore.isLoading && page != 1))
+            Observer(
+                builder: (context) =>
+                    LoaderWidget().visible(appStore.isLoading && page != 1))
           ],
         ),
       ),
