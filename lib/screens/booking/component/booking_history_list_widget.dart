@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:booking_system_flutter/model/booking_detail_model.dart';
 import 'package:booking_system_flutter/utils/common.dart';
 import 'package:booking_system_flutter/utils/constant.dart';
@@ -7,7 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class BookingHistoryListWidget extends StatelessWidget {
-  const BookingHistoryListWidget({Key? key, required this.data, required this.index, required this.length}) : super(key: key);
+  const BookingHistoryListWidget(
+      {Key? key, required this.data, required this.index, required this.length})
+      : super(key: key);
 
   final BookingActivity data;
   final int index;
@@ -15,15 +19,43 @@ class BookingHistoryListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var activityM = "";
+    final json = data.toJson();
+    final activityMessage = data.activityMessage;
+    if (activityMessage == "Booking status has been changed from  to .") {
+      var oldStatus = "";
+      var newStatus = "";
+      final Map activityData = jsonDecode(json["activity_data"]) as Map;
+      if (activityData.containsKey("old_status") &&
+          activityData.containsKey("status")) {
+        oldStatus = activityData["old_status"];
+        newStatus = activityData["status"];
+      }
+      activityM =
+          "Booking status has been changed from $oldStatus to $newStatus .";
+    } else {
+      log("Activity Message: False");
+      activityM = activityMessage ?? "";
+    }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            data.datetime.validate().toString().isNotEmpty ? Text(formatDate(data.datetime..validate().toString(), format: HOUR_12_FORMAT), style: secondaryTextStyle(size: 12)) : SizedBox(),
+            data.datetime.validate().toString().isNotEmpty
+                ? Text(
+                    formatDate(data.datetime..validate().toString(),
+                        format: HOUR_12_FORMAT),
+                    style: secondaryTextStyle(size: 12))
+                : SizedBox(),
             8.height,
-            data.datetime.validate().toString().isNotEmpty ? Text(formatDate(data.datetime..validate().toString(), format: DATE_FORMAT_4), style: primaryTextStyle(size: 14)) : SizedBox(),
+            data.datetime.validate().toString().isNotEmpty
+                ? Text(
+                    formatDate(data.datetime..validate().toString(),
+                        format: DATE_FORMAT_4),
+                    style: primaryTextStyle(size: 14))
+                : SizedBox(),
           ],
         ).withWidth(55),
         16.width,
@@ -35,7 +67,8 @@ class BookingHistoryListWidget extends StatelessWidget {
               height: 12,
               width: 12,
               decoration: BoxDecoration(
-                color: data.activityType.validate().getBookingActivityStatusColor,
+                color:
+                    data.activityType.validate().getBookingActivityStatusColor,
                 borderRadius: radius(16),
               ),
             ),
@@ -43,7 +76,8 @@ class BookingHistoryListWidget extends StatelessWidget {
               height: 65,
               child: DashedRect(
                 gap: 3,
-                color: data.activityType.validate().getBookingActivityStatusColor,
+                color:
+                    data.activityType.validate().getBookingActivityStatusColor,
                 strokeWidth: 1.5,
               ),
             ).visible(index != length - 1),
@@ -59,7 +93,7 @@ class BookingHistoryListWidget extends StatelessWidget {
               text: data.activityType.validate().capitalizeFirstLetter(),
             ),
             Text(
-              data.activityMessage.validate().capitalizeFirstLetter(),
+              activityM.validate().capitalizeFirstLetter(),
               style: secondaryTextStyle(),
             ).paddingOnly(left: 4),
           ],
