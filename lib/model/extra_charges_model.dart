@@ -1,6 +1,6 @@
 class ExtraChargesModel {
   num? id;
-  num? bookingId;
+  String? bookingId;
   String? title;
   num? price;
   num? qty;
@@ -23,8 +23,8 @@ class ExtraChargesModel {
     id = json['id'];
     bookingId = json['booking_id'];
     title = json['title'];
-    price = json['price'];
-    qty = json['qty'];
+    price = int.parse(json['price']);
+    qty = int.parse(json['qty']);
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
   }
