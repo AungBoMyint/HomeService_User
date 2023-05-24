@@ -2,11 +2,7 @@ class Translations {
   static final languages = <String>[
     'English',
     'Thai',
-    'Spanish',
-    'French',
-    'German',
-    'Italian',
-    'Russian'
+    'Burmese',
   ];
 
   static String getLanguageCode(String language) {
@@ -15,16 +11,8 @@ class Translations {
         return 'en';
       case 'Thai':
         return 'th';
-      case 'French':
-        return 'fr';
-      case 'Italian':
-        return 'it';
-      case 'Russian':
-        return 'ru';
-      case 'Spanish':
-        return 'es';
-      case 'German':
-        return 'de';
+      case 'Burmese':
+        return 'my';
       default:
         return 'en';
     }
