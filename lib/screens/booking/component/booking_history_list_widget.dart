@@ -32,7 +32,7 @@ class BookingHistoryListWidget extends StatelessWidget {
         newStatus = activityData["status"];
       }
       activityM =
-          "Booking status has been changed from $oldStatus to $newStatus .";
+          "Booking status has been changed from $oldStatus to $newStatus.";
     } else {
       log("Activity Message: False");
       activityM = activityMessage ?? "";
