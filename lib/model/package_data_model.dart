@@ -9,7 +9,7 @@ class BookingPackage {
   String? endDate;
   List<ServiceData>? serviceList;
   var isFeatured;
-  int? categoryId;
+  /* int? */ String? categoryId;
   List<Attachments>? attchments;
   List<String>? imageAttachments;
   int? status;
@@ -45,8 +45,14 @@ class BookingPackage {
         serviceList!.add(ServiceData.fromJson(v));
       });
     }
-    attchments = json['attchments_array'] != null ? (json['attchments_array'] as List).map((i) => Attachments.fromJson(i)).toList() : null;
-    imageAttachments = json['attchments'] != null ? List<String>.from(json['attchments']) : null;
+    attchments = json['attchments_array'] != null
+        ? (json['attchments_array'] as List)
+            .map((i) => Attachments.fromJson(i))
+            .toList()
+        : null;
+    imageAttachments = json['attchments'] != null
+        ? List<String>.from(json['attchments'])
+        : null;
     categoryId = json['category_id'];
     isFeatured = json['is_featured'];
     packageType = json['package_type'];
@@ -69,7 +75,8 @@ class BookingPackage {
     data['category_id'] = this.categoryId;
     data['is_featured'] = this.isFeatured;
     if (this.attchments != null) {
-      data['attchments_array'] = this.attchments!.map((v) => v.toJson()).toList();
+      data['attchments_array'] =
+          this.attchments!.map((v) => v.toJson()).toList();
     }
     if (this.imageAttachments != null) {
       data['attchments'] = this.imageAttachments;

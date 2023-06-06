@@ -45,7 +45,8 @@ class _ReasonDialogState extends State<ReasonDialog> {
                     child: AppTextField(
                       controller: _textFieldReason,
                       textFieldType: TextFieldType.MULTILINE,
-                      decoration: inputDecoration(context, labelText: language.enterReason),
+                      decoration: inputDecoration(context,
+                          labelText: language.enterReason),
                       minLines: 4,
                       maxLines: 10,
                     ),
@@ -67,7 +68,9 @@ class _ReasonDialogState extends State<ReasonDialog> {
           ),
         ),
         Observer(
-          builder: (context) => LoaderWidget().withSize(height: 80, width: 80).visible(appStore.isLoading),
+          builder: (context) => LoaderWidget()
+              .withSize(height: 80, width: 80)
+              .visible(appStore.isLoading),
         )
       ],
     );
@@ -77,18 +80,37 @@ class _ReasonDialogState extends State<ReasonDialog> {
     Map request = {
       CommonKeys.id: widget.status.bookingDetail!.id.validate(),
       BookingUpdateKeys.startAt: widget.status.bookingDetail!.date.validate(),
-      BookingUpdateKeys.endAt: formatDate(DateTime.now().toString(), format: BOOKING_SAVE_FORMAT, isLanguageNeeded: false),
-      BookingUpdateKeys.durationDiff: widget.status.bookingDetail!.durationDiff.validate(),
+      BookingUpdateKeys.endAt: formatDate(DateTime.now().toString(),
+          format: BOOKING_SAVE_FORMAT, isLanguageNeeded: false),
+      BookingUpdateKeys.durationDiff:
+          widget.status.bookingDetail!.durationDiff.validate(),
       BookingUpdateKeys.reason: _textFieldReason.text,
       CommonKeys.status: BookingStatusKeys.cancelled,
       CommonKeys.advancePaidAmount: widget.status.bookingDetail!.paidAmount,
-      BookingUpdateKeys.paymentStatus: widget.status.bookingDetail!.isAdvancePaymentDone ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID : widget.status.bookingDetail!.paymentStatus.validate(),
+      BookingUpdateKeys.paymentStatus:
+          widget.status.bookingDetail!.isAdvancePaymentDone
+              ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID
+              : widget.status.bookingDetail!.paymentStatus.validate(),
     };
 
     appStore.setLoading(true);
 
     await updateBooking(request).then((res) async {
       toast(res.message!);
+      //-----------Push Noti To Provider After Booking is successful.
+      final email = getStringAsync(USER_EMAIL);
+      userService.getUser(email: email).then((user) async {
+        //push noti
+        notificationService.sendPushToProvider(
+          "Cancel Booking",
+          widget.status.service?.name ?? "",
+          userImage: user.socialImage.validate(),
+          data: {"id": widget.status.bookingDetail!.id.validate()},
+        ).catchError((v) => log("---------Push Noti Error: $v"));
+      }).catchError((v) {
+        log("---------------Get User Erro Fro Push-------");
+      });
+      //------------------//
       finish(context, true);
     }).catchError((e) {
       toast(e.toString(), print: true);
@@ -100,20 +122,45 @@ class _ReasonDialogState extends State<ReasonDialog> {
   void saveHoldClick() async {
     Map request = {
       CommonKeys.id: widget.status.bookingDetail!.id.validate(),
-      BookingUpdateKeys.startAt: widget.status.bookingDetail!.startAt.validate(),
-      BookingUpdateKeys.endAt: formatDate(DateTime.now().toString(), format: BOOKING_SAVE_FORMAT, isLanguageNeeded: false),
-      BookingUpdateKeys.durationDiff: DateTime.parse(DateFormat(BOOKING_SAVE_FORMAT).format(DateTime.now())).difference(DateTime.parse(widget.status.bookingDetail!.startAt.validate())).inSeconds,
+      BookingUpdateKeys.startAt:
+          widget.status.bookingDetail!.startAt.validate(),
+      BookingUpdateKeys.endAt: formatDate(DateTime.now().toString(),
+          format: BOOKING_SAVE_FORMAT, isLanguageNeeded: false),
+      BookingUpdateKeys.durationDiff: DateTime.parse(
+              DateFormat(BOOKING_SAVE_FORMAT).format(DateTime.now()))
+          .difference(
+              DateTime.parse(widget.status.bookingDetail!.startAt.validate()))
+          .inSeconds,
       BookingUpdateKeys.reason: _textFieldReason.text,
       CommonKeys.status: BookingStatusKeys.hold,
-      BookingUpdateKeys.paymentStatus: widget.status.bookingDetail!.isAdvancePaymentDone ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID : widget.status.bookingDetail!.paymentStatus.validate(),
+      BookingUpdateKeys.paymentStatus:
+          widget.status.bookingDetail!.isAdvancePaymentDone
+              ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID
+              : widget.status.bookingDetail!.paymentStatus.validate(),
     };
 
     appStore.setLoading(true);
 
     await updateBooking(request).then((res) async {
       toast(res.message!);
+      //-----------Push Noti To Provider After Booking is successful.
+      final email = getStringAsync(USER_EMAIL);
+      userService.getUser(email: email).then((user) async {
+        //push noti
+        notificationService.sendPushToProvider(
+          "Hold",
+          widget.status.service?.name ?? "",
+          userImage: user.socialImage.validate(),
+          data: {"id": widget.status.bookingDetail!.id.validate()},
+        ).catchError((v) => log("---------Push Noti Error: $v"));
+      }).catchError((v) {
+        log("---------------Get User Erro Fro Push-------");
+      });
+      //------------------//
       Map<String, dynamic> liveStreamRequest = {
-        "inSeconds": "${(widget.status.bookingDetail!.durationDiff.toInt() + request[BookingUpdateKeys.durationDiff].toString().toInt())}".toInt(),
+        "inSeconds":
+            "${(widget.status.bookingDetail!.durationDiff.toInt() + request[BookingUpdateKeys.durationDiff].toString().toInt())}"
+                .toInt(),
         "status": BookingStatusKeys.hold,
       };
       LiveStream().emit(LIVESTREAM_START_TIMER, liveStreamRequest);
@@ -128,7 +175,9 @@ class _ReasonDialogState extends State<ReasonDialog> {
   void _handleClick() {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      if (widget.status.bookingDetail!.status == BookingStatusKeys.pending || widget.status.bookingDetail!.status == BookingStatusKeys.hold || widget.status.bookingDetail!.status == BookingStatusKeys.accept) {
+      if (widget.status.bookingDetail!.status == BookingStatusKeys.pending ||
+          widget.status.bookingDetail!.status == BookingStatusKeys.hold ||
+          widget.status.bookingDetail!.status == BookingStatusKeys.accept) {
         saveCancelClick();
       } else if (widget.currentStatus == BookingStatusKeys.hold) {
         saveHoldClick();

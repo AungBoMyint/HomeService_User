@@ -21,11 +21,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import 'services/notification_service.dart';
 
 AppStore appStore = AppStore();
 FilterStore filterStore = FilterStore();
 BaseLanguage language = LanguageEn();
-
+NotificationService notificationService = NotificationService();
 UserService userService = UserService();
 // AuthServices authService = AuthServices();
 AuthService authService = AuthService();
@@ -38,6 +42,15 @@ List<DashboardCustomerReview> reviewData = [];
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  //-----FOR ONE SIGNAL
+  OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+  //TODO:To put APP id to separate file in Producation Mode
+  OneSignal.shared.setAppId("349daeb0-f597-44f6-bc01-45001cf0642a");
+  //for notification permission request
+  OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
+    log("--Accepted notificaiton permission: $accepted");
+  });
 
   passwordLengthGlobal = 6;
   appButtonBackgroundColorGlobal = primaryColor;
@@ -109,6 +122,22 @@ void main() async {
         isInitializing: true);
   }
 
+  ///for  Player ID
+  /* final playerID = getStringAsync(PLAYERID, defaultValue: "");
+  if (playerID.isEmpty) {
+    final playerId = Uuid().v1();
+    // ignore: deprecated_member_use
+    setStringAsync(PLAYERID, playerId);
+    await appStore.setPlayerId(playerId);
+    await await OneSignal.shared.
+  } */
+  OneSignal.shared.getDeviceState().then((deviceState) async {
+    String playerID = deviceState?.userId ?? "";
+    // ignore: deprecated_member_use
+    setStringAsync(PLAYERID, playerID);
+    await appStore.setPlayerId(playerID);
+    print("-----------OneSignal Player ID: $playerID");
+  });
   runApp(MyApp());
 }
 
@@ -120,7 +149,18 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
+    init();
     super.initState();
+  }
+
+  init() {
+    OneSignal.shared.setNotificationWillShowInForegroundHandler(
+        (OSNotificationReceivedEvent event) {
+      // Will be called whenever a notification is received in foreground
+      // Display Notification, pass null param for not displaying the notification
+      log("--------------------Notificaiton Receive: ${event.notification}------------");
+      event.complete(event.notification);
+    });
   }
 
   @override

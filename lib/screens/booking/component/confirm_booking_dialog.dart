@@ -22,8 +22,14 @@ class ConfirmBookingDialog extends StatefulWidget {
   final num? bookingPrice;
   final BookingPackage? selectedPackage;
   final CouponData? appliedCouponData;
+  final String? serviceID;
 
-  ConfirmBookingDialog({required this.data, required this.bookingPrice, this.selectedPackage, this.appliedCouponData});
+  ConfirmBookingDialog(
+      {required this.data,
+      required this.bookingPrice,
+      required this.serviceID,
+      this.selectedPackage,
+      this.appliedCouponData});
 
   @override
   State<ConfirmBookingDialog> createState() => _ConfirmBookingDialogState();
@@ -54,13 +60,16 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
 
       selectedPackage = {
         PackageKey.packageId: widget.selectedPackage!.id.validate(),
-        PackageKey.categoryId: widget.selectedPackage!.categoryId != -1 ? widget.selectedPackage!.categoryId.validate() : null,
+        PackageKey.categoryId: widget.selectedPackage!.categoryId != -1
+            ? widget.selectedPackage!.categoryId.validate()
+            : null,
         PackageKey.name: widget.selectedPackage!.name.validate(),
         PackageKey.price: widget.selectedPackage!.price.validate(),
         PackageKey.serviceId: serviceId,
         PackageKey.startDate: widget.selectedPackage!.startDate.validate(),
         PackageKey.endDate: widget.selectedPackage!.endDate.validate(),
-        PackageKey.isFeatured: widget.selectedPackage!.isFeatured == 1 ? '1' : '0',
+        PackageKey.isFeatured:
+            widget.selectedPackage!.isFeatured == 1 ? '1' : '0',
         PackageKey.packageType: widget.selectedPackage!.packageType.validate(),
       };
     }
@@ -72,30 +81,47 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
       CommonKeys.serviceId: widget.data.serviceDetail!.id.toString(),
       CommonKeys.providerId: widget.data.provider!.id.validate().toString(),
       CommonKeys.customerId: appStore.userId.toString().toString(),
-      BookingServiceKeys.description: widget.data.serviceDetail!.bookingDescription.validate().toString(),
-      CommonKeys.address: widget.data.serviceDetail!.address.validate().toString(),
-      CommonKeys.date: widget.data.serviceDetail!.dateTimeVal.validate().toString(),
-      BookingServiceKeys.couponId: widget.data.serviceDetail!.couponCode.validate().toString(),
+      BookingServiceKeys.description:
+          widget.data.serviceDetail!.bookingDescription.validate().toString(),
+      CommonKeys.address:
+          widget.data.serviceDetail!.address.validate().toString(),
+      CommonKeys.date:
+          widget.data.serviceDetail!.dateTimeVal.validate().toString(),
+      BookingServiceKeys.couponId:
+          widget.data.serviceDetail!.couponCode.validate().toString(),
       BookService.amount: widget.bookingPrice,
       BookService.quantity: '${widget.data.serviceDetail!.qty.validate()}',
-      BookingServiceKeys.totalAmount: widget.selectedPackage != null ? widget.bookingPrice.toString() : widget.data.serviceDetail!.totalAmount.toString(),
-      CouponKeys.discount: widget.data.serviceDetail!.discount != null ? widget.data.serviceDetail!.discount.toString() : "",
-      BookService.bookingAddressId: widget.data.serviceDetail!.bookingAddressId != -1 ? widget.data.serviceDetail!.bookingAddressId : null,
+      BookingServiceKeys.totalAmount: widget.selectedPackage != null
+          ? widget.bookingPrice.toString()
+          : widget.data.serviceDetail!.totalAmount.toString(),
+      CouponKeys.discount: widget.data.serviceDetail!.discount != null
+          ? widget.data.serviceDetail!.discount.toString()
+          : "",
+      BookService.bookingAddressId:
+          widget.data.serviceDetail!.bookingAddressId != -1
+              ? widget.data.serviceDetail!.bookingAddressId
+              : null,
       BookingServiceKeys.type: BOOKING_TYPE_SERVICE,
-      BookingServiceKeys.bookingPackage: widget.selectedPackage != null ? selectedPackage : null
+      BookingServiceKeys.bookingPackage:
+          widget.selectedPackage != null ? selectedPackage : null
     };
 
     if (widget.data.serviceDetail!.isSlotAvailable) {
-      request.putIfAbsent('booking_date', () => widget.data.serviceDetail!.bookingDate.validate().toString());
-      request.putIfAbsent('booking_slot', () => widget.data.serviceDetail!.bookingSlot.validate().toString());
-      request.putIfAbsent('booking_day', () => widget.data.serviceDetail!.bookingDay.validate().toString());
+      request.putIfAbsent('booking_date',
+          () => widget.data.serviceDetail!.bookingDate.validate().toString());
+      request.putIfAbsent('booking_slot',
+          () => widget.data.serviceDetail!.bookingSlot.validate().toString());
+      request.putIfAbsent('booking_day',
+          () => widget.data.serviceDetail!.bookingDay.validate().toString());
     }
 
     if (widget.data.taxes.validate().isNotEmpty) {
       request.putIfAbsent('tax', () => widget.data.taxes);
     }
-    if (widget.data.serviceDetail != null && widget.data.serviceDetail!.isAdvancePayment) {
-      request.putIfAbsent(CommonKeys.status, () => BookingStatusKeys.waitingAdvancedPayment);
+    if (widget.data.serviceDetail != null &&
+        widget.data.serviceDetail!.isAdvancePayment) {
+      request.putIfAbsent(
+          CommonKeys.status, () => BookingStatusKeys.waitingAdvancedPayment);
     }
 
     log("Booking Request:- ${jsonEncode(request)}");
@@ -104,15 +130,31 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
 
     bookTheServices(request).then((value) async {
       appStore.setLoading(false);
-
-      if (widget.data.serviceDetail != null && widget.data.serviceDetail!.isAdvancePayment) {
+      //-----------Push Noti To Provider After Booking is successful.
+      final email = getStringAsync(USER_EMAIL);
+      userService.getUser(email: email).then((user) async {
+        //push noti
+        notificationService.sendPushToProvider(
+          "Booking",
+          widget.data.serviceDetail?.name ?? "",
+          userImage: user.socialImage.validate(),
+          data: {"id": widget.serviceID.validate()},
+        ).catchError((v) => log("---------Push Noti Error: $v"));
+      }).catchError((v) {
+        log("---------------Get User Erro Fro Push-------");
+      });
+      //------------------//
+      if (widget.data.serviceDetail != null &&
+          widget.data.serviceDetail!.isAdvancePayment) {
         BookingDetailResponse bookingDetailResponse = await getBookingDetail({
           CommonKeys.bookingId: value[CommonKeys.bookingId],
           CommonKeys.customerId: appStore.userId,
         });
         finish(context);
         finish(context);
-        PaymentScreen(bookings: bookingDetailResponse, isForAdvancePayment: true).launch(context);
+        PaymentScreen(
+                bookings: bookingDetailResponse, isForAdvancePayment: true)
+            .launch(context);
       } else {
         finish(context);
         finish(context);
@@ -136,7 +178,10 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
   }
 
   num get getAdvancePaymentAmount {
-    num advancePaymentAmount = (widget.data.serviceDetail!.totalAmount.validate() * widget.data.serviceDetail!.advancePaymentPercentage.validate() / 100);
+    num advancePaymentAmount =
+        (widget.data.serviceDetail!.totalAmount.validate() *
+            widget.data.serviceDetail!.advancePaymentPercentage.validate() /
+            100);
     return advancePaymentAmount;
   }
 
@@ -150,11 +195,13 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(ic_confirm_check, height: 100, width: 100, color: primaryColor),
+              Image.asset(ic_confirm_check,
+                  height: 100, width: 100, color: primaryColor),
               24.height,
               Text(language.lblConfirmBooking, style: boldTextStyle(size: 20)),
               16.height,
-              Text(language.lblConfirmMsg, style: primaryTextStyle(), textAlign: TextAlign.center),
+              Text(language.lblConfirmMsg,
+                  style: primaryTextStyle(), textAlign: TextAlign.center),
               16.height,
               CheckboxListTile(
                 value: isSelected,
@@ -163,7 +210,8 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
                   isSelected = !isSelected;
                   setState(() {});
                 },
-                title: Text(language.confirmationTermsConditions, style: secondaryTextStyle(size: 12)),
+                title: Text(language.confirmationTermsConditions,
+                    style: secondaryTextStyle(size: 12)),
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
               ),
