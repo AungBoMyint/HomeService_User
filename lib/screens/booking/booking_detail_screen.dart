@@ -994,7 +994,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
     await updateBooking(request).then((res) async {
       toast(res.message!);
-      //-----------Push Noti To Provider After Booking is successful.
+      /* //-----------Push Noti To Provider After Booking is successful.
       final email = getStringAsync(USER_EMAIL);
       userService.getUser(email: email).then((user) async {
         //push noti
@@ -1007,7 +1007,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       }).catchError((v) {
         log("---------------Get User Erro Fro Push-------");
       });
-      //------------------//
+      //------------------// */
       commonStartTimer(
           isHourlyService: status.bookingDetail!.isHourlyService,
           status: BookingStatusKeys.inProgress,
@@ -1051,8 +1051,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       userService.getUser(email: email).then((user) async {
         //push noti
         notificationService.sendPushToProvider(
-          "Start",
-          status.service?.name ?? "",
+          "${status.service?.name ?? ""} is Starting.",
+          "Please follow the guidelines and take care of your customer. \nGood Luck",
           userImage: user.socialImage.validate(),
           data: {"id": status.bookingDetail!.id.validate()},
         ).catchError((v) => log("---------Push Noti Error: $v"));
@@ -1126,8 +1126,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       userService.getUser(email: email).then((user) async {
         //push noti
         notificationService.sendPushToProvider(
-          "Done",
-          status.service?.name ?? "",
+          "${status.service?.name ?? ""} is done.",
+          "Please request the payment.\nDo not forget to pay the invoice.",
           userImage: user.socialImage.validate(),
           data: {"id": status.bookingDetail!.id.validate()},
         ).catchError((v) => log("---------Push Noti Error: $v"));

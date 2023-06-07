@@ -141,7 +141,7 @@ class LanguageEn extends BaseLanguage {
   String get review => "Reviews";
 
   @override
-  String get hintDescription => "Phone & Description";
+  String get hintDescription => "Phone Number & Description";
 
   @override
   String get lblApply => "Apply";
@@ -366,7 +366,7 @@ class LanguageEn extends BaseLanguage {
   String get lblUseCurrentLocation => "Use Current Location";
 
   @override
-  String get lblEnterDescription => "Enter Phone & Description";
+  String get lblEnterDescription => "Enter Phone Number & Description";
 
   @override
   String get lblPrice => "Price";

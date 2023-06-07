@@ -129,16 +129,19 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
     appStore.setLoading(true);
 
     bookTheServices(request).then((value) async {
+      log("============Book The Servic Response: $value");
       appStore.setLoading(false);
       //-----------Push Noti To Provider After Booking is successful.
       final email = getStringAsync(USER_EMAIL);
+      final bookingRes = value as Map<String, dynamic>;
+      final bookingID = bookingRes["booking_id"];
       userService.getUser(email: email).then((user) async {
         //push noti
         notificationService.sendPushToProvider(
-          "Booking",
-          widget.data.serviceDetail?.name ?? "",
+          "${widget.data.serviceDetail?.name ?? ""} Order Received.",
+          "Please Accept the Booking Order and prepare for your work. \nGood Luck",
           userImage: user.socialImage.validate(),
-          data: {"id": widget.serviceID.validate()},
+          data: {"id": bookingID},
         ).catchError((v) => log("---------Push Noti Error: $v"));
       }).catchError((v) {
         log("---------------Get User Erro Fro Push-------");

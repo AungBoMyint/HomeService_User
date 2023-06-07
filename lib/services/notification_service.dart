@@ -78,8 +78,8 @@ class NotificationService {
         'en': content,
       },
       "language": "en",
-      'big_picture':
-          userImage.validate().isNotEmpty ? userImage.validate() : '',
+      /* 'big_picture':
+          userImage.validate().isNotEmpty ? userImage.validate() : '', */
       'large_icon': userImage.validate().isNotEmpty ? userImage.validate() : '',
       'small_icon': appLogo,
       'data': data,

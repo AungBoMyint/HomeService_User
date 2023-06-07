@@ -97,7 +97,7 @@ class _ReasonDialogState extends State<ReasonDialog> {
 
     await updateBooking(request).then((res) async {
       toast(res.message!);
-      //-----------Push Noti To Provider After Booking is successful.
+      /* //-----------Push Noti To Provider After Booking is successful.
       final email = getStringAsync(USER_EMAIL);
       userService.getUser(email: email).then((user) async {
         //push noti
@@ -110,7 +110,7 @@ class _ReasonDialogState extends State<ReasonDialog> {
       }).catchError((v) {
         log("---------------Get User Erro Fro Push-------");
       });
-      //------------------//
+      //------------------// */
       finish(context, true);
     }).catchError((e) {
       toast(e.toString(), print: true);
@@ -143,7 +143,7 @@ class _ReasonDialogState extends State<ReasonDialog> {
 
     await updateBooking(request).then((res) async {
       toast(res.message!);
-      //-----------Push Noti To Provider After Booking is successful.
+      /* //-----------Push Noti To Provider After Booking is successful.
       final email = getStringAsync(USER_EMAIL);
       userService.getUser(email: email).then((user) async {
         //push noti
@@ -156,7 +156,7 @@ class _ReasonDialogState extends State<ReasonDialog> {
       }).catchError((v) {
         log("---------------Get User Erro Fro Push-------");
       });
-      //------------------//
+      //------------------// */
       Map<String, dynamic> liveStreamRequest = {
         "inSeconds":
             "${(widget.status.bookingDetail!.durationDiff.toInt() + request[BookingUpdateKeys.durationDiff].toString().toInt())}"
