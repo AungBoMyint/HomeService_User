@@ -65,6 +65,7 @@ class _BookingConfirmationDialogState extends State<BookingConfirmationDialog> {
           style: boldTextStyle(size: 16),
           textAlign: TextAlign.end);
     }
+    //For Slot
     final hour = widget.data.serviceDetail!.bookingSlot
         .validate()
         .split(":")
@@ -74,10 +75,9 @@ class _BookingConfirmationDialogState extends State<BookingConfirmationDialog> {
         widget.data.serviceDetail!.bookingSlot.validate().split(":")[1].toInt();
     log("-----------Hour: $hour Minute: $minute");
     return Text(
-      TimeOfDay(
-        hour: hour,
-        minute: minute,
-      ).format(context),
+      /* "$hour:$minute" */
+      formatDate(DateTime(2010, 2, 4, hour, minute).toIso8601String(),
+          format: HOUR_24_FORMAT),
       style: boldTextStyle(size: 16),
       textAlign: TextAlign.end,
     );

@@ -1,7 +1,8 @@
 import 'package:nb_utils/nb_utils.dart';
 
 /// DO NOT CHANGE THIS PACKAGE NAME
-var appPackageName = isAndroid ? 'com.iqonic.servicebooking' : 'com.iqonic.user';
+var appPackageName =
+    isAndroid ? 'com.iqonic.servicebooking' : 'com.iqonic.user';
 
 //region Common Configs
 const DEFAULT_FIREBASE_PASSWORD = '12345678';
@@ -263,9 +264,12 @@ const DATE_FORMAT_1 = 'dd-MMM-yyyy hh:mm a';
 const DATE_FORMAT_2 = 'd MMM, yyyy';
 const DATE_FORMAT_3 = 'dd-MMM-yyyy';
 const HOUR_12_FORMAT = 'hh:mm a';
+const HOUR_24_FORMAT = 'HH:mm';
 const DATE_FORMAT_4 = 'dd MMM';
 const DATE_FORMAT_7 = 'yyyy-MM-dd';
 const DATE_FORMAT_8 = 'd MMM, yyyy hh:mm a';
+const DATE_FORMAT_9 = 'dd-MMM-yyyy HH:mm';
+
 const YEAR = 'yyyy';
 const BOOKING_SAVE_FORMAT = "yyyy-MM-dd kk:mm:ss";
 //endregion
@@ -277,7 +281,8 @@ const GOOGLE_MAP_PREFIX = 'https://www.google.com/maps/search/?api=1&query=';
 
 //endregion
 
-SlideConfiguration sliderConfigurationGlobal = SlideConfiguration(duration: 400.milliseconds, delay: 50.milliseconds);
+SlideConfiguration sliderConfigurationGlobal =
+    SlideConfiguration(duration: 400.milliseconds, delay: 50.milliseconds);
 
 // region JOB REQUEST STATUS
 const JOB_REQUEST_STATUS_REQUESTED = "requested";

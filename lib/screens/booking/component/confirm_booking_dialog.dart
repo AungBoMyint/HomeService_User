@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:booking_system_flutter/component/loader_widget.dart';
 import 'package:booking_system_flutter/main.dart';
 import 'package:booking_system_flutter/model/package_data_model.dart';
@@ -9,10 +8,12 @@ import 'package:booking_system_flutter/utils/colors.dart';
 import 'package:booking_system_flutter/utils/images.dart';
 import 'package:booking_system_flutter/utils/model_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../../model/booking_detail_model.dart';
+import '../../../utils/configs.dart';
 import '../../../utils/constant.dart';
 import '../../payment/payment_screen.dart';
 import 'booking_confirmation_dialog.dart';
@@ -135,6 +136,26 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
       final email = getStringAsync(USER_EMAIL);
       final bookingRes = value as Map<String, dynamic>;
       final bookingID = bookingRes["booking_id"];
+      //------we push LOCAL NOTIFICATION FIRST
+      const AndroidNotificationDetails androidNotificationDetails =
+          AndroidNotificationDetails('booking_channel_id', 'booking',
+              channelDescription: 'booking notification',
+              importance: Importance.max,
+              priority: Priority.high,
+              ticker: 'ticker');
+      const NotificationDetails notificationDetails =
+          NotificationDetails(android: androidNotificationDetails);
+      final notiID = getIntAsync(LOCAL_NOTIFICATION_KEY, defaultValue: 0);
+      await flutterLocalNotificationsPlugin.show(
+        notiID,
+        "${widget.data.serviceDetail?.name ?? ""} Booking Requested.",
+        'Please wait an approval from Provider.',
+        notificationDetails,
+        payload: '$bookingID',
+      );
+      // ignore: deprecated_member_use
+      setIntAsync(LOCAL_NOTIFICATION_KEY, notiID + 1);
+      //---------
       userService.getUser(email: email).then((user) async {
         //push noti
         notificationService.sendPushToProvider(

@@ -18,12 +18,12 @@ import 'package:booking_system_flutter/utils/constant.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:uuid/uuid.dart';
-
+import 'screens/booking/booking_detail_screen.dart';
 import 'services/notification_service.dart';
 
 AppStore appStore = AppStore();
@@ -35,7 +35,8 @@ UserService userService = UserService();
 AuthService authService = AuthService();
 ChatServices chatServices = ChatServices();
 RemoteConfigDataModel remoteConfigDataModel = RemoteConfigDataModel();
-
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 String currentPackageName = '';
 
 List<DashboardCustomerReview> reviewData = [];
@@ -43,6 +44,12 @@ List<DashboardCustomerReview> reviewData = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  //---For Local Notification--------//
+
+  flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestPermission();
   //-----FOR ONE SIGNAL
   OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
   //TODO:To put APP id to separate file in Producation Mode
@@ -153,7 +160,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  init() {
+  init() async {
+    //----For OneSignal
     OneSignal.shared.setNotificationWillShowInForegroundHandler(
         (OSNotificationReceivedEvent event) {
       // Will be called whenever a notification is received in foreground
