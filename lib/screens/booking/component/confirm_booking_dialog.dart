@@ -133,7 +133,7 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
       log("============Book The Servic Response: $value");
       appStore.setLoading(false);
       //-----------Push Noti To Provider After Booking is successful.
-      final email = getStringAsync(USER_EMAIL);
+      final providerID = widget.data.provider?.id ?? 0;
       final bookingRes = value as Map<String, dynamic>;
       final bookingID = bookingRes["booking_id"];
       //------we push LOCAL NOTIFICATION FIRST
@@ -156,12 +156,13 @@ class _ConfirmBookingDialogState extends State<ConfirmBookingDialog> {
       // ignore: deprecated_member_use
       setIntAsync(LOCAL_NOTIFICATION_KEY, notiID + 1);
       //---------
-      userService.getUser(email: email).then((user) async {
+      userService.getUserByID(providerID: providerID).then((user) async {
         //push noti
         notificationService.sendPushToProvider(
           "${widget.data.serviceDetail?.name ?? ""} Order Received.",
           "Please Accept the Booking Order and prepare for your work. \nGood Luck",
-          userImage: user.socialImage.validate(),
+          userImage: "" /*  user.socialImage.validate() */,
+          receiverPlayerId: user.playerId ?? "",
           data: {"id": bookingID},
         ).catchError((v) => log("---------Push Noti Error: $v"));
       }).catchError((v) {

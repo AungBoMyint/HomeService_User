@@ -1047,13 +1047,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       toast(res.message!);
 
       //-----------Push Noti To Provider After Booking is successful.
-      final email = getStringAsync(USER_EMAIL);
-      userService.getUser(email: email).then((user) async {
+      final providerID = status.providerData?.id ?? 0;
+      userService.getUserByID(providerID: providerID).then((user) async {
         //push noti
         notificationService.sendPushToProvider(
           "${status.service?.name ?? ""} is Starting.",
           "Please follow the guidelines and take care of your customer. \nGood Luck",
-          userImage: user.socialImage.validate(),
+          userImage: "" /* user.socialImage.validate() */,
+          receiverPlayerId: user.playerId ?? "",
           data: {"id": status.bookingDetail!.id.validate()},
         ).catchError((v) => log("---------Push Noti Error: $v"));
       }).catchError((v) {
@@ -1122,13 +1123,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           status: BookingStatusKeys.complete,
           timeInSec: status.bookingDetail!.durationDiff.validate().toInt());
       //-----------Push Noti To Provider After Booking is successful.
-      final email = getStringAsync(USER_EMAIL);
-      userService.getUser(email: email).then((user) async {
+      final providerID = status.providerData?.id ?? 0;
+      userService.getUserByID(providerID: providerID).then((user) async {
         //push noti
         notificationService.sendPushToProvider(
           "${status.service?.name ?? ""} is done.",
           "Please request the payment.\nDo not forget to pay the invoice.",
-          userImage: user.socialImage.validate(),
+          userImage: "" /* user.socialImage.validate() */,
+          receiverPlayerId: user.playerId ?? "",
           data: {"id": status.bookingDetail!.id.validate()},
         ).catchError((v) => log("---------Push Noti Error: $v"));
       }).catchError((v) {

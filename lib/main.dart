@@ -52,7 +52,7 @@ void main() async {
       ?.requestPermission();
   //-----FOR ONE SIGNAL
   OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
-  //TODO:To put APP id to separate file in Producation Mode
+  //TODO:To put APP id to separate file in Production Mode
   OneSignal.shared.setAppId("349daeb0-f597-44f6-bc01-45001cf0642a");
   //for notification permission request
   OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {

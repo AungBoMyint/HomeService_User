@@ -67,6 +67,7 @@ class NotificationService {
     String title,
     String content, {
     required String userImage,
+    required String receiverPlayerId,
     required Map<String, dynamic> data,
   }) async {
     log("-----------------Notificatoin Content: $content \n User Image: $userImage");
@@ -88,7 +89,7 @@ class NotificationService {
           getStringAsync(ONESIGNAL_API_KEY, defaultValue: ONESIGNAL_APP_ID),
       'android_channel_id': getStringAsync(ONESIGNAL_CHANNEL_KEY,
           defaultValue: ONESIGNAL_CHANNEL_ID),
-      "included_segments": ["ProviderApp"],
+      'include_player_ids': [receiverPlayerId],
     };
 
     log(req);
