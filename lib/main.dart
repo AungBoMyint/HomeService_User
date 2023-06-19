@@ -17,6 +17,7 @@ import 'package:booking_system_flutter/utils/configs.dart';
 import 'package:booking_system_flutter/utils/constant.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -50,15 +51,6 @@ void main() async {
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.requestPermission();
-  //-----FOR ONE SIGNAL
-  OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
-  //TODO:To put APP id to separate file in Production Mode
-  OneSignal.shared.setAppId("349daeb0-f597-44f6-bc01-45001cf0642a");
-  //for notification permission request
-  OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
-    log("--Accepted notificaiton permission: $accepted");
-  });
-
   passwordLengthGlobal = 6;
   appButtonBackgroundColorGlobal = primaryColor;
   defaultAppButtonTextColorGlobal = Colors.white;
@@ -129,15 +121,6 @@ void main() async {
         isInitializing: true);
   }
 
-  ///for  Player ID
-  /* final playerID = getStringAsync(PLAYERID, defaultValue: "");
-  if (playerID.isEmpty) {
-    final playerId = Uuid().v1();
-    // ignore: deprecated_member_use
-    setStringAsync(PLAYERID, playerId);
-    await appStore.setPlayerId(playerId);
-    await await OneSignal.shared.
-  } */
   OneSignal.shared.getDeviceState().then((deviceState) async {
     String playerID = deviceState?.userId ?? "";
     // ignore: deprecated_member_use
@@ -161,6 +144,26 @@ class _MyAppState extends State<MyApp> {
   }
 
   init() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      print('User granted provisional permission');
+    } else {
+      print('User declined or has not accepted permission');
+    }
     //----For OneSignal
     OneSignal.shared.setNotificationWillShowInForegroundHandler(
         (OSNotificationReceivedEvent event) {

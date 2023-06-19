@@ -28,7 +28,13 @@ class SignUpScreen extends StatefulWidget {
   final bool isOTPLogin;
   final String? uid;
 
-  SignUpScreen({Key? key, this.phoneNumber, this.isOTPLogin = false, this.countryCode, this.uid}) : super(key: key);
+  SignUpScreen(
+      {Key? key,
+      this.phoneNumber,
+      this.isOTPLogin = false,
+      this.countryCode,
+      this.uid})
+      : super(key: key);
 
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
@@ -62,11 +68,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void init() async {
     if (widget.phoneNumber != null) {
-      selectedCountry = Country.parse(widget.countryCode.validate(value: selectedCountry.countryCode));
+      selectedCountry = Country.parse(
+          widget.countryCode.validate(value: selectedCountry.countryCode));
 
-      mobileCont.text = widget.phoneNumber != null ? widget.phoneNumber.toString() : "";
-      passwordCont.text = widget.phoneNumber != null ? widget.phoneNumber.toString() : "";
-      userNameCont.text = widget.phoneNumber != null ? widget.phoneNumber.toString() : "";
+      mobileCont.text =
+          widget.phoneNumber != null ? widget.phoneNumber.toString() : "";
+      passwordCont.text =
+          widget.phoneNumber != null ? widget.phoneNumber.toString() : "";
+      userNameCont.text =
+          widget.phoneNumber != null ? widget.phoneNumber.toString() : "";
     }
   }
 
@@ -102,7 +112,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ..email = emailCont.text.trim()
           ..password = passwordCont.text.trim();
 
-        await createUser(tempRegisterData.toJson()).then((registerResponse) async {
+        await createUser(tempRegisterData.toJson())
+            .then((registerResponse) async {
           registerResponse.userData!.password = passwordCont.text.trim();
 
           /// After successful entry in the mysql database it will login into firebase.
@@ -117,14 +128,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> firebaseSignup({required LoginResponse registerResponse}) async {
-    await authService.signUpWithEmailPassword(context, userData: registerResponse.userData!).then((value) async {
+    await authService
+        .signUpWithEmailPassword(context, userData: registerResponse.userData!)
+        .then((value) async {
       if (value) {
         /// If Registered then check for the type of  user to directly login or send to signup page.
 
         var request = {
           "email": registerResponse.userData!.email.validate(),
           'password': registerResponse.userData!.password.validate(),
-          'player_id': appStore.playerId,
+          'player_id': getStringAsync(PLAYERID),
         };
 
         /// Calling Login API
@@ -136,7 +149,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             if (res.userData != null) await saveUserData(res.userData!);
 
-            DashboardScreen().launch(context, isNewTask: true, pageRouteAnimation: PageRouteAnimation.Fade);
+            DashboardScreen().launch(context,
+                isNewTask: true, pageRouteAnimation: PageRouteAnimation.Fade);
 
             appStore.setLoading(false);
           }
@@ -180,12 +194,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         register.userData!.updatedAt = Timestamp.now().toDate().toString();
         register.userData!.playerId = getStringAsync(PLAYERID);
 
-        await authService.signUpWithOTP(context, register.userData!).then((value) async {
+        await authService
+            .signUpWithOTP(context, register.userData!)
+            .then((value) async {
           toast(language.loginSuccessfully, print: true);
 
           if (register.userData != null) await saveUserData(register.userData!);
 
-          DashboardScreen().launch(context, isNewTask: true, pageRouteAnimation: PageRouteAnimation.Fade);
+          DashboardScreen().launch(context,
+              isNewTask: true, pageRouteAnimation: PageRouteAnimation.Fade);
 
           appStore.setLoading(false);
         }).catchError((e) {
@@ -201,7 +218,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> changeCountry() async {
     showCountryPicker(
       context: context,
-      showPhoneCode: true, // optional. Shows phone code before the country name.
+      showPhoneCode:
+          true, // optional. Shows phone code before the country name.
       onSelect: (Country country) {
         selectedCountry = country;
         setState(() {});
@@ -220,12 +238,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
           width: 80,
           padding: EdgeInsets.all(16),
           child: ic_profile2.iconImage(color: Colors.white),
-          decoration: boxDecorationDefault(shape: BoxShape.circle, color: primaryColor),
+          decoration:
+              boxDecorationDefault(shape: BoxShape.circle, color: primaryColor),
         ),
         16.height,
         Text(language.lblHelloUser, style: boldTextStyle(size: 24)).center(),
         16.height,
-        Text(language.lblSignUpSubTitle, style: primaryTextStyle(size: 18), textAlign: TextAlign.center).center().paddingSymmetric(horizontal: 32),
+        Text(language.lblSignUpSubTitle,
+                style: primaryTextStyle(size: 18), textAlign: TextAlign.center)
+            .center()
+            .paddingSymmetric(horizontal: 32),
       ],
     );
   }
@@ -240,7 +262,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           focus: fNameFocus,
           nextFocus: lNameFocus,
           errorThisFieldRequired: language.requiredText,
-          decoration: inputDecoration(context, labelText: language.hintFirstNameTxt),
+          decoration:
+              inputDecoration(context, labelText: language.hintFirstNameTxt),
           suffix: ic_profile2.iconImage(size: 10).paddingAll(14),
         ),
         16.height,
@@ -250,7 +273,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           focus: lNameFocus,
           nextFocus: userNameFocus,
           errorThisFieldRequired: language.requiredText,
-          decoration: inputDecoration(context, labelText: language.hintLastNameTxt),
+          decoration:
+              inputDecoration(context, labelText: language.hintLastNameTxt),
           suffix: ic_profile2.iconImage(size: 10).paddingAll(14),
         ),
         16.height,
@@ -261,7 +285,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           nextFocus: emailFocus,
           readOnly: widget.isOTPLogin.validate() ? widget.isOTPLogin : false,
           errorThisFieldRequired: language.requiredText,
-          decoration: inputDecoration(context, labelText: language.hintUserNameTxt),
+          decoration:
+              inputDecoration(context, labelText: language.hintUserNameTxt),
           suffix: ic_profile2.iconImage(size: 10).paddingAll(14),
         ),
         16.height,
@@ -271,7 +296,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           focus: emailFocus,
           errorThisFieldRequired: language.requiredText,
           nextFocus: mobileFocus,
-          decoration: inputDecoration(context, labelText: language.hintEmailTxt),
+          decoration:
+              inputDecoration(context, labelText: language.hintEmailTxt),
           suffix: ic_message.iconImage(size: 10).paddingAll(14),
         ),
         16.height,
@@ -279,9 +305,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           textFieldType: isAndroid ? TextFieldType.PHONE : TextFieldType.NAME,
           controller: mobileCont,
           focus: mobileFocus,
-          buildCounter: (_, {required int currentLength, required bool isFocused, required int? maxLength}) {
+          buildCounter: (_,
+              {required int currentLength,
+              required bool isFocused,
+              required int? maxLength}) {
             return TextButton(
-              child: Text(language.lblChangeCountry, style: primaryTextStyle(size: 14)),
+              child: Text(language.lblChangeCountry,
+                  style: primaryTextStyle(size: 14)),
               onPressed: () {
                 changeCountry();
               },
@@ -289,7 +319,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           },
           errorThisFieldRequired: language.requiredText,
           nextFocus: passwordFocus,
-          decoration: inputDecoration(context, labelText: language.hintContactNumberTxt).copyWith(
+          decoration:
+              inputDecoration(context, labelText: language.hintContactNumberTxt)
+                  .copyWith(
             prefixText: '+${selectedCountry.phoneCode} ',
             hintText: '${language.lblExample}: ${selectedCountry.example}',
           ),
@@ -301,10 +333,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           controller: passwordCont,
           focus: passwordFocus,
           readOnly: widget.isOTPLogin.validate() ? widget.isOTPLogin : false,
-          suffixPasswordVisibleWidget: ic_show.iconImage(size: 10).paddingAll(14),
-          suffixPasswordInvisibleWidget: ic_hide.iconImage(size: 10).paddingAll(14),
+          suffixPasswordVisibleWidget:
+              ic_show.iconImage(size: 10).paddingAll(14),
+          suffixPasswordInvisibleWidget:
+              ic_hide.iconImage(size: 10).paddingAll(14),
           errorThisFieldRequired: language.requiredText,
-          decoration: inputDecoration(context, labelText: language.hintPasswordTxt),
+          decoration:
+              inputDecoration(context, labelText: language.hintPasswordTxt),
           onFieldSubmitted: (s) {
             if (widget.isOTPLogin) {
               registerWithOTP();
@@ -344,13 +379,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         16.width,
         RichTextWidget(
           list: [
-            TextSpan(text: '${language.lblAgree} ', style: secondaryTextStyle()),
+            TextSpan(
+                text: '${language.lblAgree} ', style: secondaryTextStyle()),
             TextSpan(
               text: language.lblTermsOfService,
               style: boldTextStyle(color: primaryColor, size: 14),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  commonLaunchUrl(TERMS_CONDITION_URL, launchMode: LaunchMode.externalApplication);
+                  commonLaunchUrl(TERMS_CONDITION_URL,
+                      launchMode: LaunchMode.externalApplication);
                 },
             ),
             TextSpan(text: ' & ', style: secondaryTextStyle()),
@@ -359,7 +396,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               style: boldTextStyle(color: primaryColor, size: 14),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  commonLaunchUrl(PRIVACY_POLICY_URL, launchMode: LaunchMode.externalApplication);
+                  commonLaunchUrl(PRIVACY_POLICY_URL,
+                      launchMode: LaunchMode.externalApplication);
                 },
             ),
           ],
@@ -374,7 +412,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         16.height,
         RichTextWidget(
           list: [
-            TextSpan(text: "${language.alreadyHaveAccountTxt} ? ", style: secondaryTextStyle()),
+            TextSpan(
+                text: "${language.alreadyHaveAccountTxt} ? ",
+                style: secondaryTextStyle()),
             TextSpan(
               text: language.signIn,
               style: boldTextStyle(color: primaryColor, size: 14),
@@ -399,7 +439,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: context.scaffoldBackgroundColor,
         leading: BackWidget(iconColor: context.iconColor),
         scrolledUnderElevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: appStore.isDarkMode ? Brightness.light : Brightness.dark, statusBarColor: context.scaffoldBackgroundColor),
+        systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarIconBrightness:
+                appStore.isDarkMode ? Brightness.light : Brightness.dark,
+            statusBarColor: context.scaffoldBackgroundColor),
       ),
       body: SizedBox(
         width: context.width(),
@@ -420,7 +463,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
             ),
-            Observer(builder: (_) => LoaderWidget().center().visible(appStore.isLoading)),
+            Observer(
+                builder: (_) =>
+                    LoaderWidget().center().visible(appStore.isLoading)),
           ],
         ),
       ),
