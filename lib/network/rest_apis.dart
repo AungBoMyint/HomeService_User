@@ -343,9 +343,9 @@ Future<DashboardResponse> userDashboard(
         }
       }
     });
-    1.seconds.delay.then((value) {
+    /* 1.seconds.delay.then((value) {
       initializeOneSignal();
-    });
+    }); */
 
     if (_dashboardResponse.paymentSettings != null) {
       setValue(PAYMENT_LIST,

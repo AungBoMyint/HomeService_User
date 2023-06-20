@@ -8,6 +8,7 @@ import 'package:booking_system_flutter/model/remote_config_data_model.dart';
 import 'package:booking_system_flutter/screens/splash_screen.dart';
 import 'package:booking_system_flutter/services/auth_services.dart';
 import 'package:booking_system_flutter/services/chat_services.dart';
+import 'package:booking_system_flutter/services/firebase_messaging_service.dart';
 import 'package:booking_system_flutter/services/user_services.dart';
 import 'package:booking_system_flutter/store/app_store.dart';
 import 'package:booking_system_flutter/store/filter_store.dart';
@@ -30,6 +31,7 @@ import 'services/notification_service.dart';
 AppStore appStore = AppStore();
 FilterStore filterStore = FilterStore();
 BaseLanguage language = LanguageEn();
+FirebaseMessagingService firebaseMessagingService = FirebaseMessagingService();
 NotificationService notificationService = NotificationService();
 UserService userService = UserService();
 // AuthServices authService = AuthServices();
@@ -42,6 +44,15 @@ String currentPackageName = '';
 
 List<DashboardCustomerReview> reviewData = [];
 
+//Top Level Function
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  print("Handling a background message: ${message.messageId}");
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -51,6 +62,7 @@ void main() async {
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.requestPermission();
+
   passwordLengthGlobal = 6;
   appButtonBackgroundColorGlobal = primaryColor;
   defaultAppButtonTextColorGlobal = Colors.white;
@@ -119,15 +131,15 @@ void main() async {
         isInitializing: true);
     await appStore.setHelplineNumber(getStringAsync(HELPLINE_NUMBER),
         isInitializing: true);
+    //if User have already Login,we need to listen
+    //Device Token's refresh
+    firebaseMessagingService.listenToken(getStringAsync(USER_EMAIL));
   }
 
-  OneSignal.shared.getDeviceState().then((deviceState) async {
-    String playerID = deviceState?.userId ?? "";
-    // ignore: deprecated_member_use
-    setStringAsync(PLAYERID, playerID);
-    await appStore.setPlayerId(playerID);
-    print("-----------OneSignal Player ID: $playerID");
-  });
+  //Get Token
+  firebaseMessagingService.getToken();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 
@@ -139,39 +151,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    init();
+    firebaseMessagingService.requestPermission();
     super.initState();
-  }
-
-  init() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.provisional) {
-      print('User granted provisional permission');
-    } else {
-      print('User declined or has not accepted permission');
-    }
-    //----For OneSignal
-    OneSignal.shared.setNotificationWillShowInForegroundHandler(
-        (OSNotificationReceivedEvent event) {
-      // Will be called whenever a notification is received in foreground
-      // Display Notification, pass null param for not displaying the notification
-      log("--------------------Notificaiton Receive: ${event.notification}------------");
-      event.complete(event.notification);
-    });
   }
 
   @override

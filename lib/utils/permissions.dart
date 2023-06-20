@@ -5,11 +5,13 @@ import 'package:permission_handler_platform_interface/permission_handler_platfor
 import 'constant.dart';
 
 class Permissions {
-  static PermissionHandlerPlatform get _handler => PermissionHandlerPlatform.instance;
+  static PermissionHandlerPlatform get _handler =>
+      PermissionHandlerPlatform.instance;
 
   static Future<bool> cameraFilesAndLocationPermissionsGranted() async {
     if (!getBoolAsync(PERMISSION_STATUS)) {
-      Map<Permission, PermissionStatus> cameraPermissionStatus = await _handler.requestPermissions(
+      Map<Permission, PermissionStatus> cameraPermissionStatus =
+          await _handler.requestPermissions(
         [
           Permission.camera,
           Permission.location,
@@ -23,9 +25,9 @@ class Permissions {
         if (element == PermissionStatus.granted) {
           checkedTrue = true;
         } else if (element == PermissionStatus.permanentlyDenied) {
-          openAppSettings();
-          checkedTrue = false;
-        }else {
+          /* openAppSettings(); */
+          checkedTrue = true;
+        } else {
           checkedTrue = false;
         }
       });

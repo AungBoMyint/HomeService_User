@@ -1,15 +1,18 @@
+import 'dart:async';
+
 import 'package:booking_system_flutter/main.dart';
 import 'package:booking_system_flutter/model/user_data_model.dart';
 import 'package:booking_system_flutter/utils/constant.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import 'base_services.dart';
 
 class UserService extends BaseService {
   FirebaseFirestore fireStore = FirebaseFirestore.instance;
-
+  StreamSubscription? tokenSubscription;
   UserService() {
     ref = fireStore.collection(USER_COLLECTION);
   }
@@ -117,6 +120,20 @@ class UserService extends BaseService {
       ref!.doc(value.uid.validate()).update({
         'player_id': playerId,
         'updated_at': Timestamp.now().toDate().toString(),
+      });
+      log("=============Finish Updating Player ID: $playerId");
+      //for listen token change//
+      if (!(tokenSubscription == null)) {
+        tokenSubscription?.cancel();
+      }
+      tokenSubscription =
+          FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+        await userByEmail(email).then((value) {
+          ref!.doc(value.uid.validate()).update({
+            'player_id': token,
+            'updated_at': Timestamp.now().toDate().toString(),
+          });
+        });
       });
     }).catchError((e) {
       toast(e.toString());
