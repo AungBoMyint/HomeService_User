@@ -13,6 +13,7 @@ import 'package:booking_system_flutter/utils/common.dart';
 import 'package:booking_system_flutter/utils/constant.dart';
 import 'package:booking_system_flutter/utils/images.dart';
 import 'package:booking_system_flutter/utils/string_extensions.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
@@ -44,57 +45,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     afterBuildCreated(() async {
-      //----For Local Notification
-      //---when user tap to Notification,this method is called.
-      void onDidReceiveNotificationResponse(
-          NotificationResponse notificationResponse) async {
-        String? notId = notificationResponse.payload;
-        if (notId.validate().isNotEmpty) {
-          BookingDetailScreen(bookingId: notId.toString().toInt())
-              .launch(navigatorKey.currentContext!);
-        }
-      }
-
-      //---Intilization to Show Local Notification
-// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-      const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('ic_stat_onesignal_default');
-      final DarwinInitializationSettings initializationSettingsDarwin =
-          DarwinInitializationSettings(onDidReceiveLocalNotification: null);
-      final LinuxInitializationSettings initializationSettingsLinux =
-          LinuxInitializationSettings(defaultActionName: 'Open notification');
-      final InitializationSettings initializationSettings =
-          InitializationSettings(
-              android: initializationSettingsAndroid,
-              iOS: initializationSettingsDarwin,
-              macOS: initializationSettingsDarwin,
-              linux: initializationSettingsLinux);
-      await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-          onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
-
-      // Handle Notification click and redirect to that Service & BookDetail screen
-
-      if (isMobile) {
-        OneSignal.shared.setNotificationOpenedHandler(
-            (OSNotificationOpenedResult notification) async {
-          if (notification.notification.additionalData!.containsKey('id')) {
-            String? notId =
-                notification.notification.additionalData!["id"].toString();
-            if (notId.validate().isNotEmpty) {
-              BookingDetailScreen(bookingId: notId.toString().toInt())
-                  .launch(context);
-            }
-          } else if (notification.notification.additionalData!
-              .containsKey('service_id')) {
-            String? notId =
-                notification.notification.additionalData!["service_id"];
-            if (notId.validate().isNotEmpty) {
-              ServiceDetailScreen(serviceId: notId.toInt()).launch(context);
-            }
-          }
-        });
-      }
-
+      //TODO:Set UP Notification
+      firebaseMessagingService.setUpFullNotification();
       // Changes System theme when changed
       if (getIntAsync(THEME_MODE_INDEX) == THEME_MODE_SYSTEM) {
         appStore.setDarkMode(context.platformBrightness() == Brightness.dark);

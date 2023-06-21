@@ -8,6 +8,7 @@ import 'package:booking_system_flutter/model/remote_config_data_model.dart';
 import 'package:booking_system_flutter/screens/splash_screen.dart';
 import 'package:booking_system_flutter/services/auth_services.dart';
 import 'package:booking_system_flutter/services/chat_services.dart';
+import 'package:booking_system_flutter/services/firebase_messaging_service.dart';
 import 'package:booking_system_flutter/services/user_services.dart';
 import 'package:booking_system_flutter/store/app_store.dart';
 import 'package:booking_system_flutter/store/filter_store.dart';
@@ -17,6 +18,7 @@ import 'package:booking_system_flutter/utils/configs.dart';
 import 'package:booking_system_flutter/utils/constant.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -29,6 +31,7 @@ import 'services/notification_service.dart';
 AppStore appStore = AppStore();
 FilterStore filterStore = FilterStore();
 BaseLanguage language = LanguageEn();
+FirebaseMessagingService firebaseMessagingService = FirebaseMessagingService();
 NotificationService notificationService = NotificationService();
 UserService userService = UserService();
 // AuthServices authService = AuthServices();
@@ -41,6 +44,15 @@ String currentPackageName = '';
 
 List<DashboardCustomerReview> reviewData = [];
 
+//Top Level Function
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  print("Handling a background message: ${message.messageId}");
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -50,14 +62,6 @@ void main() async {
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.requestPermission();
-  //-----FOR ONE SIGNAL
-  OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
-  //TODO:To put APP id to separate file in Production Mode
-  OneSignal.shared.setAppId("349daeb0-f597-44f6-bc01-45001cf0642a");
-  //for notification permission request
-  OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
-    log("--Accepted notificaiton permission: $accepted");
-  });
 
   passwordLengthGlobal = 6;
   appButtonBackgroundColorGlobal = primaryColor;
@@ -127,24 +131,15 @@ void main() async {
         isInitializing: true);
     await appStore.setHelplineNumber(getStringAsync(HELPLINE_NUMBER),
         isInitializing: true);
+    //if User have already Login,we need to listen
+    //Device Token's refresh
+    firebaseMessagingService.listenToken(getStringAsync(USER_EMAIL));
   }
 
-  ///for  Player ID
-  /* final playerID = getStringAsync(PLAYERID, defaultValue: "");
-  if (playerID.isEmpty) {
-    final playerId = Uuid().v1();
-    // ignore: deprecated_member_use
-    setStringAsync(PLAYERID, playerId);
-    await appStore.setPlayerId(playerId);
-    await await OneSignal.shared.
-  } */
-  OneSignal.shared.getDeviceState().then((deviceState) async {
-    String playerID = deviceState?.userId ?? "";
-    // ignore: deprecated_member_use
-    setStringAsync(PLAYERID, playerID);
-    await appStore.setPlayerId(playerID);
-    print("-----------OneSignal Player ID: $playerID");
-  });
+  //Get Token
+  firebaseMessagingService.getToken();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 
@@ -156,19 +151,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    init();
+    firebaseMessagingService.requestPermission();
     super.initState();
-  }
-
-  init() async {
-    //----For OneSignal
-    OneSignal.shared.setNotificationWillShowInForegroundHandler(
-        (OSNotificationReceivedEvent event) {
-      // Will be called whenever a notification is received in foreground
-      // Display Notification, pass null param for not displaying the notification
-      log("--------------------Notificaiton Receive: ${event.notification}------------");
-      event.complete(event.notification);
-    });
   }
 
   @override

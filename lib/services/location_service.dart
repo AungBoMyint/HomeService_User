@@ -23,7 +23,9 @@ Future<Position> getUserLocationPosition() async {
     throw '${language.lblLocationPermissionDeniedPermanently}';
   }
 
-  return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((value) {
+  return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high)
+      .then((value) {
     return value;
   }).catchError((e) async {
     return await Geolocator.getLastKnownPosition().then((value) async {
@@ -43,11 +45,14 @@ Future<String> getUserLocation() async {
     throw e.toString();
   });
 
-  return await buildFullAddressFromLatLong(position.latitude, position.longitude);
+  return await buildFullAddressFromLatLong(
+      position.latitude, position.longitude);
 }
 
-Future<String> buildFullAddressFromLatLong(double latitude, double longitude) async {
-  List<Placemark> placeMark = await placemarkFromCoordinates(latitude, longitude).catchError((e) async {
+Future<String> buildFullAddressFromLatLong(
+    double latitude, double longitude) async {
+  List<Placemark> placeMark =
+      await placemarkFromCoordinates(latitude, longitude).catchError((e) async {
     log(e);
     throw errorSomethingWentWrong;
   });
@@ -61,12 +66,19 @@ Future<String> buildFullAddressFromLatLong(double latitude, double longitude) as
 
   String address = '';
 
-  if (!place.name.isEmptyOrNull && !place.street.isEmptyOrNull && place.name != place.street) address = '${place.name.validate()}, ';
-  if (!place.street.isEmptyOrNull) address = '$address${place.street.validate()}';
-  if (!place.locality.isEmptyOrNull) address = '$address, ${place.locality.validate()}';
-  if (!place.administrativeArea.isEmptyOrNull) address = '$address, ${place.administrativeArea.validate()}';
-  if (!place.postalCode.isEmptyOrNull) address = '$address, ${place.postalCode.validate()}';
-  if (!place.country.isEmptyOrNull) address = '$address, ${place.country.validate()}';
+  if (!place.name.isEmptyOrNull &&
+      !place.street.isEmptyOrNull &&
+      place.name != place.street) address = '${place.name.validate()}, ';
+  if (!place.street.isEmptyOrNull)
+    address = '$address${place.street.validate()}';
+  if (!place.locality.isEmptyOrNull)
+    address = '$address, ${place.locality.validate()}';
+  if (!place.administrativeArea.isEmptyOrNull)
+    address = '$address, ${place.administrativeArea.validate()}';
+  if (!place.postalCode.isEmptyOrNull)
+    address = '$address, ${place.postalCode.validate()}';
+  if (!place.country.isEmptyOrNull)
+    address = '$address, ${place.country.validate()}';
 
   setValue(CURRENT_ADDRESS, address);
 

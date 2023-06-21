@@ -18,6 +18,8 @@ dependencies:
   firebase_pagination: ^3.0.0
   firebase_remote_config: ^3.0.15
   firebase_storage: ^11.0.16
+  firebase_messaging: ^14.6.3
+  dio: ^5.2.1+1
   flutter:
     sdk: flutter
   flutter_custom_tabs: ^1.0.4
